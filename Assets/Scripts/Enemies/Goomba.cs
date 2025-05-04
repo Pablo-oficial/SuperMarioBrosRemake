@@ -3,32 +3,46 @@ using UnityEngine;
 public class Goomba : MonoBehaviour
 {
     public float moveSpeed = 1f;
+    public bool isDead = false;
     private Rigidbody2D rb;
-    private bool movingLeft = false;
-    private bool isDead = false;
+    private Animator anim;
+    private bool movingLeft = true;
+    private bool wasVisible = false;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-    }
-
-    private bool IsInCameraView()
-    {
-        if (Camera.main == null)
-            return false;
-        
-        Vector3 viewportPos = Camera.main.WorldToViewportPoint(transform.position);
-        return (viewportPos.x >= 0f && viewportPos.x <= 1f &&
-                viewportPos.y >= 0f && viewportPos.y <= 1f &&
-                viewportPos.z > 0);
+        anim = GetComponent<Animator>();
     }
 
     void Update()
     {
-        if (isDead || !IsInCameraView()) return;
+        bool inView = IsInCameraView();
+
+        if (inView)
+        {
+            wasVisible = true;
+        }
+        else if (wasVisible && !inView)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        if (isDead || !inView) return;
 
         float direction = movingLeft ? -1f : 1f;
         rb.linearVelocity = new Vector2(direction * moveSpeed, rb.linearVelocity.y);
+    }
+
+    private bool IsInCameraView()
+    {
+        if (Camera.main == null) return false;
+
+        Vector3 viewportPos = Camera.main.WorldToViewportPoint(transform.position);
+        return (viewportPos.x >= 0f && viewportPos.x <= 1f &&
+                viewportPos.y >= 0f && viewportPos.y <= 1f &&
+                viewportPos.z > 0);
     }
 
     void Flip()
@@ -41,38 +55,34 @@ public class Goomba : MonoBehaviour
 
     public void Die()
     {
+        if (isDead) return;
+
         isDead = true;
         rb.linearVelocity = Vector2.zero;
-        GetComponent<Collider2D>().enabled = false;
-        Destroy(gameObject, 0.5f);
+
+        anim?.SetTrigger("Death");
+
+        Invoke(nameof(DestroySelf), 0.5f);
+    }
+
+    void DestroySelf()
+    {
+        Destroy(gameObject);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            bool stomped = false;
-            foreach (var contact in collision.contacts)
-            {
-                if (contact.normal.y >= 0.5f)
-                {
-                    stomped = true;
-                    break;
-                }
-            }
+        if (isDead) return;
 
-            if (stomped)
+        if (collision.gameObject.CompareTag("Player")) return;
+
+        foreach (var contact in collision.contacts)
+        {
+            if (Mathf.Abs(contact.normal.x) > Mathf.Abs(contact.normal.y))
             {
-                Die();
-                Rigidbody2D playerRb = collision.rigidbody;
-                if (playerRb != null)
-                {
-                    playerRb.linearVelocity = new Vector2(playerRb.linearVelocity.x, 8f);
-                }
+                Flip();
+                break;
             }
-            return;
         }
-        
-        Flip();
     }
 }
