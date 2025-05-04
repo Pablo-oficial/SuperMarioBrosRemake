@@ -71,11 +71,15 @@ public class Player : MonoBehaviour
                 }
             }
 
-            Goomba enemy = collision.gameObject.GetComponent<Goomba>();
-            if (stomped && enemy != null && !enemy.isDead)
+            var enemy = collision.gameObject.GetComponent<MonoBehaviour>();
+            if (stomped && enemy != null)
             {
-                enemy.Die();
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+                var method = enemy.GetType().GetMethod("Die");
+                if (method != null)
+                {
+                    method.Invoke(enemy, null);
+                    rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+                }
             }
             else
             {
@@ -101,10 +105,10 @@ public class Player : MonoBehaviour
 
     IEnumerator DeathAnimation()
     {
-        rb.linearVelocity = new Vector2(0, 8f);
-        yield return new WaitForSeconds(0.4f);
-        rb.linearVelocity = new Vector2(0, -12f);
-        yield return new WaitForSeconds(1.5f);
+        rb.linearVelocity = new Vector2(0, 10f); 
+        yield return new WaitForSeconds(0.5f); 
+        rb.linearVelocity = new Vector2(0, -14f); 
+        yield return new WaitForSeconds(2.0f); 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
