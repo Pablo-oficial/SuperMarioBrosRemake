@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: 8de682d90cf23504bbbfb1990721021d
+guid: ed113fb9904f31a40b3ad5ea04a0b50f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 9177999713778353210
-    second: title-3_0
+      213: -4140358592991763840
+    second: coinHud_0
+  - first:
+      213: -6517154217111190065
+    second: coinHud_1
+  - first:
+      213: 3199395053502664626
+    second: coinHud_2
+  - first:
+      213: 6724109076723889099
+    second: coinHud_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,31 +122,89 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: title-3_0
+      name: coinHud_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 776
-        height: 472
+        width: 7
+        height: 8
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
-      outline:
-      - - {x: 388, y: 236}
-        - {x: -388, y: 236}
-        - {x: -388, y: -236}
-        - {x: 388, y: -236}
-      - - {x: 131, y: -38}
-        - {x: 140, y: -38}
-        - {x: 140, y: -30}
-        - {x: 131, y: -30}
+      outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: a344560dc1ece5f70800000000000000
-      internalID: 9177999713778353210
+      spriteID: 0826df5dbcd7a86c0800000000000000
+      internalID: -4140358592991763840
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coinHud_1
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 0
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc506a6d4ca6e85a0800000000000000
+      internalID: -6517154217111190065
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coinHud_2
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 0
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2bf0b2c99d8866c20800000000000000
+      internalID: 3199395053502664626
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: coinHud_3
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 0
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc37b155495d05d50800000000000000
+      internalID: 6724109076723889099
       vertices: []
       indices: 
       edges: []
@@ -146,7 +213,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: df3d6aab72c1bda4599e3fc06a1f1d43
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -155,8 +222,7 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable:
-      title-3_0: 9177999713778353210
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
