@@ -1,9 +1,11 @@
+using System.Collections;
 using UnityEngine;
 
 public class Goomba : MonoBehaviour
 {
     public float moveSpeed = 1f;
-    public bool isDead = false;
+    private bool isDead = false;
+    private bool isFrozen = false;
     private Rigidbody2D rb;
     private Animator anim;
     private bool movingLeft = true;
@@ -13,10 +15,13 @@ public class Goomba : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        rb.linearVelocity = new Vector2(-moveSpeed, 0);
     }
 
     void Update()
     {
+        if (isDead || isFrozen) return;
+
         bool inView = IsInCameraView();
 
         if (inView)
@@ -29,10 +34,13 @@ public class Goomba : MonoBehaviour
             return;
         }
 
-        if (isDead || !inView) return;
+        if (!inView) return;
 
         float direction = movingLeft ? -1f : 1f;
         rb.linearVelocity = new Vector2(direction * moveSpeed, rb.linearVelocity.y);
+
+        if (rb.linearVelocity.x != 0)
+            transform.eulerAngles = new Vector3(0, rb.linearVelocity.x < 0 ? 0 : 180, 0);
     }
 
     private bool IsInCameraView()
@@ -48,31 +56,49 @@ public class Goomba : MonoBehaviour
     void Flip()
     {
         movingLeft = !movingLeft;
-        Vector3 scale = transform.localScale;
-        scale.x *= -1;
-        transform.localScale = scale;
+        transform.eulerAngles = new Vector3(0, movingLeft ? 0 : 180, 0);
     }
 
     public void Die()
     {
-        if (isDead) return;
+        if (isDead || isFrozen) return;
 
         isDead = true;
+
         rb.linearVelocity = Vector2.zero;
+        rb.bodyType = RigidbodyType2D.Static;
 
-        anim?.SetTrigger("Death");
+        foreach (var c in GetComponentsInChildren<Collider2D>())
+            c.enabled = false;
 
-        Invoke(nameof(DestroySelf), 0.5f);
+        if (anim != null)
+            anim.SetTrigger("Death");
+
+        StartCoroutine(DeathSequence());
     }
 
-    void DestroySelf()
+    public void Freeze()
     {
+        if (isDead || isFrozen) return;
+
+        isFrozen = true;
+
+        rb.linearVelocity = Vector2.zero;
+        rb.bodyType = RigidbodyType2D.Static;
+
+        if (anim != null)
+            anim.speed = 0f;
+    }
+
+    IEnumerator DeathSequence()
+    {
+        yield return new WaitForSeconds(0.5f);
         Destroy(gameObject);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (isDead) return;
+        if (isDead || isFrozen) return;
 
         if (collision.gameObject.CompareTag("Player")) return;
 

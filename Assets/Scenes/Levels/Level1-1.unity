@@ -748,7 +748,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 2088023278}
   followSpeed: 5
-  xOffset: 3
+  xOffset: 2
 --- !u!1001 &571038786
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -52554,8 +52554,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.003, y: -0.087, z: -0.0021597561}
-  m_LocalScale: {x: 0.16666667, y: 0.16666667, z: 0.020833334}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.19999999, y: 0.30999997, z: 0.024999999}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 2088023278}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -53613,7 +53613,7 @@ Rigidbody2D:
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 7c114784021b55a4695af44bed3ce19b, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -53634,7 +53634,7 @@ BoxCollider2D:
   m_Enabled: 0
   serializedVersion: 3
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 7c114784021b55a4695af44bed3ce19b, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -53682,8 +53682,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d7100d70e9a6cd4cb4e468c580787cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
-  jumpForce: 10
+  maxSpeed: 5.5
+  acceleration: 15
+  deceleration: 20
+  jumpForce: 12
+  jumpHoldTime: 0.2
+  gravityScale: 3
+  fallingGravityScale: 5
   groundCheck: {fileID: 1745878739}
   groundCheckRadius: 0.1
   groundLayer:

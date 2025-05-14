@@ -4,14 +4,26 @@ using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
-    public float moveSpeed = 5f;
-    public float jumpForce = 8f;
+    public float maxSpeed = 6.5f;
+    public float acceleration = 0.2f;
+    public float deceleration = 0.3f;
+    public float jumpForce = 16f;
+    public float jumpHoldTime = 0.3f;
+    public float gravityScale = 3.5f;
+    public float fallingGravityScale = 5.5f;
+
     private Rigidbody2D rb;
     private Animator anim;
     private bool isDead = false;
+    private bool isGrounded = false;
+    private bool isJumping = false;
+    private float jumpTimer = 0f;
+    private float moveInput = 0f;
+    private float currentSpeed = 0f;
+    private Collider2D[] colliders;
 
     public Transform groundCheck;
-    public float groundCheckRadius = 0.1f;
+    public float groundCheckRadius = 0.2f;
     public LayerMask groundLayer;
 
     private float halfWidth;
@@ -20,6 +32,8 @@ public class Player : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        colliders = GetComponentsInChildren<Collider2D>();
+        rb.gravityScale = gravityScale;
 
         Collider2D col = GetComponent<Collider2D>();
         if (col != null)
@@ -30,29 +44,85 @@ public class Player : MonoBehaviour
     {
         if (isDead) return;
 
-        float move = Input.GetAxis("Horizontal");
+        moveInput = Input.GetAxisRaw("Horizontal");
+
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+        if (anim != null)
+            anim.SetBool("IsGrounded", isGrounded);
+
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded && !isJumping)
+        {
+            isJumping = true;
+            jumpTimer = 0f;
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            if (anim != null)
+                anim.SetTrigger("Jump");
+        }
+
+        if (Input.GetKey(KeyCode.Space) && isJumping)
+        {
+            jumpTimer += Time.deltaTime;
+            if (jumpTimer < jumpHoldTime)
+            {
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            }
+        }
+
+        if (Input.GetKeyUp(KeyCode.Space) || jumpTimer >= jumpHoldTime)
+        {
+            isJumping = false;
+        }
+
+        if (anim != null)
+            anim.SetFloat("Move", Mathf.Abs(currentSpeed));
+    }
+
+    void FixedUpdate()
+    {
+        if (isDead) return;
+
+        float targetSpeed = moveInput * maxSpeed;
+        if (Mathf.Abs(moveInput) > 0.01f)
+        {
+            currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, acceleration * Time.fixedDeltaTime);
+        }
+        else
+        {
+            currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, deceleration * Time.fixedDeltaTime);
+        }
+
+        rb.linearVelocity = new Vector2(currentSpeed, rb.linearVelocity.y);
+
+        if (!isGrounded && rb.linearVelocity.y < 0)
+        {
+            rb.gravityScale = fallingGravityScale;
+        }
+        else
+        {
+            rb.gravityScale = gravityScale;
+        }
 
         Vector3 pos = transform.position;
-        Vector3 left = Camera.main.ViewportToWorldPoint(new Vector3(0.03f, 0f, 0f));
-        Vector3 right = Camera.main.ViewportToWorldPoint(new Vector3(1f, 0f, 0f));
-        if ((move < 0 && pos.x - halfWidth <= left.x) ||
-            (move > 0 && pos.x + halfWidth >= right.x))
+        Vector3 left = Camera.main.ViewportToWorldPoint(new Vector3(0.03f, 0f, 10f));
+        Vector3 right = Camera.main.ViewportToWorldPoint(new Vector3(1f, 0f, 10f));
+
+        if (pos.x - halfWidth <= left.x && currentSpeed < 0)
         {
-            move = 0;
+            currentSpeed = 0;
+            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+            pos.x = left.x + halfWidth;
+        }
+        else if (pos.x + halfWidth >= right.x && currentSpeed > 0)
+        {
+            currentSpeed = 0;
+            rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+            pos.x = right.x - halfWidth;
         }
 
-        rb.linearVelocity = new Vector2(move * moveSpeed, rb.linearVelocity.y);
-        anim?.SetFloat("Move", Mathf.Abs(move));
+        transform.position = pos;
 
-        bool isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
-        {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-            anim?.SetTrigger("Jump");
-        }
-
-        if (move != 0)
-            transform.eulerAngles = new Vector3(0, move < 0 ? 180f : 0f, 0);
+        if (moveInput != 0)
+            transform.eulerAngles = new Vector3(0, moveInput < 0 ? 180f : 0f, 0);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -90,25 +160,42 @@ public class Player : MonoBehaviour
 
     void Die()
     {
+        if (isDead) return;
         isDead = true;
 
-        foreach (var c in GetComponentsInChildren<Collider2D>())
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (GameObject enemy in enemies)
+        {
+            var enemyScript = enemy.GetComponent<MonoBehaviour>();
+            if (enemyScript != null)
+            {
+                var freezeMethod = enemyScript.GetType().GetMethod("Freeze");
+                if (freezeMethod != null)
+                {
+                    freezeMethod.Invoke(enemyScript, null);
+                }
+            }
+        }
+        foreach (var c in colliders)
             c.enabled = false;
 
         rb.bodyType = RigidbodyType2D.Dynamic;
-        rb.gravityScale = 1f;
+        rb.gravityScale = gravityScale;
         rb.linearVelocity = Vector2.zero;
+        rb.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
 
-        anim?.SetTrigger("Death");
+        if (anim != null)
+            anim.SetTrigger("Death");
+
         StartCoroutine(DeathAnimation());
     }
 
     IEnumerator DeathAnimation()
     {
-        rb.linearVelocity = new Vector2(0, 10f); 
-        yield return new WaitForSeconds(0.5f); 
-        rb.linearVelocity = new Vector2(0, -14f); 
-        yield return new WaitForSeconds(2.0f); 
+        rb.linearVelocity = new Vector2(0, 12f);
+        yield return new WaitForSeconds(0.5f);
+        rb.linearVelocity = new Vector2(0, -8f);
+        yield return new WaitForSeconds(2f);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
