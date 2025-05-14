@@ -4,9 +4,11 @@ using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
-    public float maxSpeed = 6.5f;
-    public float acceleration = 0.2f;
-    public float deceleration = 0.3f;
+    public float maxSpeed = 6.5f; // Velocidade máxima normal
+    public float runMaxSpeed = 10.5f; // Velocidade máxima ao correr
+    public float acceleration = 0.2f; // Aceleração normal
+    public float runAcceleration = 0.3f; // Aceleração ao correr
+    public float deceleration = 0.3f; // Desaceleração (igual para normal e corrida)
     public float jumpForce = 16f;
     public float jumpHoldTime = 0.3f;
     public float gravityScale = 3.5f;
@@ -74,17 +76,26 @@ public class Player : MonoBehaviour
         }
 
         if (anim != null)
+        {
             anim.SetFloat("Move", Mathf.Abs(currentSpeed));
+            // Ajustar velocidade da animação durante a corrida
+            anim.speed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) ? 1.5f : 1f;
+        }
     }
 
     void FixedUpdate()
     {
         if (isDead) return;
 
-        float targetSpeed = moveInput * maxSpeed;
+        // Verificar se está correndo (Shift pressionado)
+        bool isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        float currentMaxSpeed = isRunning ? runMaxSpeed : maxSpeed;
+        float currentAcceleration = isRunning ? runAcceleration : acceleration;
+
+        float targetSpeed = moveInput * currentMaxSpeed;
         if (Mathf.Abs(moveInput) > 0.01f)
         {
-            currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, acceleration * Time.fixedDeltaTime);
+            currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, currentAcceleration * Time.fixedDeltaTime);
         }
         else
         {
@@ -176,6 +187,7 @@ public class Player : MonoBehaviour
                 }
             }
         }
+
         foreach (var c in colliders)
             c.enabled = false;
 
