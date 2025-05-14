@@ -4,11 +4,11 @@ using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
-    public float maxSpeed = 6.5f; // Velocidade máxima normal
-    public float runMaxSpeed = 10.5f; // Velocidade máxima ao correr
-    public float acceleration = 0.2f; // Aceleração normal
-    public float runAcceleration = 0.3f; // Aceleração ao correr
-    public float deceleration = 0.3f; // Desaceleração (igual para normal e corrida)
+    public float maxSpeed = 6.5f;
+    public float runMaxSpeed = 10.5f;
+    public float acceleration = 0.2f;
+    public float runAcceleration = 0.3f;
+    public float deceleration = 0.3f;
     public float jumpForce = 16f;
     public float jumpHoldTime = 0.3f;
     public float gravityScale = 3.5f;
@@ -19,6 +19,7 @@ public class Player : MonoBehaviour
     private bool isDead = false;
     private bool isGrounded = false;
     private bool isJumping = false;
+    private bool isSkidding = false;
     private float jumpTimer = 0f;
     private float moveInput = 0f;
     private float currentSpeed = 0f;
@@ -50,7 +51,10 @@ public class Player : MonoBehaviour
 
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
         if (anim != null)
+        {
             anim.SetBool("IsGrounded", isGrounded);
+            anim.SetBool("IsSkidding", isSkidding);
+        }
 
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded && !isJumping)
         {
@@ -78,7 +82,6 @@ public class Player : MonoBehaviour
         if (anim != null)
         {
             anim.SetFloat("Move", Mathf.Abs(currentSpeed));
-            // Ajustar velocidade da animação durante a corrida
             anim.speed = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) ? 1.5f : 1f;
         }
     }
@@ -87,7 +90,6 @@ public class Player : MonoBehaviour
     {
         if (isDead) return;
 
-        // Verificar se está correndo (Shift pressionado)
         bool isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         float currentMaxSpeed = isRunning ? runMaxSpeed : maxSpeed;
         float currentAcceleration = isRunning ? runAcceleration : acceleration;
@@ -95,10 +97,12 @@ public class Player : MonoBehaviour
         float targetSpeed = moveInput * currentMaxSpeed;
         if (Mathf.Abs(moveInput) > 0.01f)
         {
+            isSkidding = isGrounded && Mathf.Sign(currentSpeed) != Mathf.Sign(moveInput) && Mathf.Abs(currentSpeed) > maxSpeed * 0.3f;
             currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, currentAcceleration * Time.fixedDeltaTime);
         }
         else
         {
+            isSkidding = false;
             currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, deceleration * Time.fixedDeltaTime);
         }
 
@@ -133,7 +137,7 @@ public class Player : MonoBehaviour
         transform.position = pos;
 
         if (moveInput != 0)
-            transform.eulerAngles = new Vector3(0, moveInput < 0 ? 180f : 0f, 0);
+            transform.eulerAngles = new Vector3(0, isSkidding ? (currentSpeed < 0 ? 180f : 0f) : (moveInput < 0 ? 180f : 0f), 0);
     }
 
     void OnCollisionEnter2D(Collision2D collision)

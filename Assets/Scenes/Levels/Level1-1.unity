@@ -53237,7 +53237,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 2
-  isDead: 0
 --- !u!4 &1994105467 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8668070468228030361, guid: 490e1688ece82c24db64bdfe06f4db9f, type: 3}
@@ -53638,8 +53637,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxSpeed: 5
   runMaxSpeed: 7.5
-  acceleration: 15
-  runAcceleration: 10
+  acceleration: 5
+  runAcceleration: 5
   deceleration: 20
   jumpForce: 12
   jumpHoldTime: 0.2
