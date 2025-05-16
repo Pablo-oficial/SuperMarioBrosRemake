@@ -13,6 +13,7 @@ public class Player : MonoBehaviour
     public float jumpHoldTime = 0.3f;
     public float gravityScale = 3.5f;
     public float fallingGravityScale = 5.5f;
+    public float bumpDownForce = 8f;
 
     private Rigidbody2D rb;
     private Animator anim;
@@ -24,10 +25,13 @@ public class Player : MonoBehaviour
     private float moveInput = 0f;
     private float currentSpeed = 0f;
     private Collider2D[] colliders;
+    private bool isBig = false;
 
     public Transform groundCheck;
     public float groundCheckRadius = 0.2f;
     public LayerMask groundLayer;
+
+    public bool IsBig { get { return isBig; } }
 
     private float halfWidth;
 
@@ -97,7 +101,7 @@ public class Player : MonoBehaviour
         float targetSpeed = moveInput * currentMaxSpeed;
         if (Mathf.Abs(moveInput) > 0.01f)
         {
-            isSkidding = isGrounded && Mathf.Sign(currentSpeed) != Mathf.Sign(moveInput) && Mathf.Abs(currentSpeed) > maxSpeed * 0.3f;
+            isSkidding = isGrounded && Mathf.Sign(currentSpeed) != Mathf.Sign(moveInput) && Mathf.Abs(currentSpeed) > 0.1f;
             currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, currentAcceleration * Time.fixedDeltaTime);
         }
         else
@@ -137,7 +141,7 @@ public class Player : MonoBehaviour
         transform.position = pos;
 
         if (moveInput != 0)
-            transform.eulerAngles = new Vector3(0, isSkidding ? (currentSpeed < 0 ? 180f : 0f) : (moveInput < 0 ? 180f : 0f), 0);
+            transform.eulerAngles = new Vector3(0, moveInput < 0 ? 180f : 0f, 0);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -173,7 +177,13 @@ public class Player : MonoBehaviour
         }
     }
 
-    void Die()
+    public void BumpBlock()
+    {
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, -bumpDownForce);
+        isJumping = false;
+    }
+
+    public void Die()
     {
         if (isDead) return;
         isDead = true;
